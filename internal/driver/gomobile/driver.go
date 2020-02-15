@@ -42,7 +42,6 @@ func init() {
 }
 
 func (d *mobileDriver) CreateWindow(title string) fyne.Window {
-    fmt.Printf("detson create window\n")
 	canvas := NewCanvas().(*mobileCanvas) // silence lint
 	ret := &window{title: title, canvas: canvas, isChild: len(d.windows) > 0}
 	canvas.painter = pgl.NewPainter(canvas, ret)
@@ -69,7 +68,6 @@ func (d *mobileDriver) RenderedTextSize(text string, size int, style fyne.TextSt
 }
 
 func (d *mobileDriver) CanvasForObject(fyne.CanvasObject) fyne.Canvas {
-    fmt.Printf("detson call canvas4obj %d\n",len(d.windows))
 	if len(d.windows) == 0 {
 		return nil
 	}
@@ -100,7 +98,6 @@ func (d *mobileDriver) Quit() {
 
 	// TODO should this be disabled for iOS?
 	d.quit = true
-        fmt.Printf("detson00 quit app\n")
 }
 
 func (d *mobileDriver) Run() {
@@ -117,7 +114,6 @@ func (d *mobileDriver) Run() {
 
 			switch e := a.Filter(e).(type) {
 			case lifecycle.Event:
-                            fmt.Printf("detson00 %v\n",e)
 				switch e.Crosses(lifecycle.StageVisible) {
 				case lifecycle.CrossOn:
 					d.glctx, _ = e.DrawContext.(gl.Context)
@@ -130,7 +126,6 @@ func (d *mobileDriver) Run() {
                                             canvas.Refresh(o)
                                             return true
                                         }, nil)
-                                        fmt.Printf("detson walk %d\n",no)
 
 					a.Send(paint.Event{})
 				case lifecycle.CrossOff:
