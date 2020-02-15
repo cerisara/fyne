@@ -42,6 +42,7 @@ func init() {
 }
 
 func (d *mobileDriver) CreateWindow(title string) fyne.Window {
+    fmt.Printf("detson create window\n")
 	canvas := NewCanvas().(*mobileCanvas) // silence lint
 	ret := &window{title: title, canvas: canvas, isChild: len(d.windows) > 0}
 	canvas.painter = pgl.NewPainter(canvas, ret)
@@ -68,6 +69,7 @@ func (d *mobileDriver) RenderedTextSize(text string, size int, style fyne.TextSt
 }
 
 func (d *mobileDriver) CanvasForObject(fyne.CanvasObject) fyne.Canvas {
+    fmt.Printf("detson call canvas4obj %d\n",len(d.windows))
 	if len(d.windows) == 0 {
 		return nil
 	}
@@ -98,6 +100,7 @@ func (d *mobileDriver) Quit() {
 
 	// TODO should this be disabled for iOS?
 	d.quit = true
+        fmt.Printf("detson00 quit app\n")
 }
 
 func (d *mobileDriver) Run() {
@@ -114,16 +117,20 @@ func (d *mobileDriver) Run() {
 
 			switch e := a.Filter(e).(type) {
 			case lifecycle.Event:
+                            fmt.Printf("detson00 %v\n",e)
 				switch e.Crosses(lifecycle.StageVisible) {
 				case lifecycle.CrossOn:
 					d.glctx, _ = e.DrawContext.(gl.Context)
 					d.onStart()
 
                                         // this is a fix for some android phone to prevent the app from being drawn as a blank screen after being pushed in the background
+                                        no:=0
                                         canvas.walkTree(func(o fyne.CanvasObject, _ fyne.Position, _ fyne.Position, _ fyne.Size) bool {
+                                            no++
                                             canvas.Refresh(o)
                                             return true
                                         }, nil)
+                                        fmt.Printf("detson walk %d\n",no)
 
 					a.Send(paint.Event{})
 				case lifecycle.CrossOff:
@@ -181,7 +188,8 @@ func (d *mobileDriver) Run() {
 			}
 
 			if d.quit {
-				break
+                                // bugfix ? when pressing the back button, other gomobile apps do not terminate, so why should we ?
+				// break
 			}
 		}
 	})

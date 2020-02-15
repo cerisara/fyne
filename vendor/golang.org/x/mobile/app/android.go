@@ -327,14 +327,19 @@ func mainUI(vm, jniEnv, ctx uintptr) error {
 	}()
 
 	var pixelsPerPt float32
+	var orientation size.Orientation
 
 	for {
 		select {
 		case <-donec:
+                    fmt.Printf("detsondonec\n")
 			return nil
 		case cfg := <-windowConfigChange:
+                    fmt.Printf("detsonconfigchange\n")
 			pixelsPerPt = cfg.pixelsPerPt
+			orientation = cfg.orientation
 		case w := <-windowRedrawNeeded:
+                    fmt.Printf("detsonredrawneeded\n")
 			if C.surface == nil {
 				if errStr := C.createEGLSurface(w); errStr != nil {
 					return fmt.Errorf("%s (%s)", C.GoString(errStr), eglGetError())
@@ -351,10 +356,12 @@ func mainUI(vm, jniEnv, ctx uintptr) error {
 				WidthPt:     geom.Pt(float32(widthPx) / pixelsPerPt),
 				HeightPt:    geom.Pt(float32(heightPx) / pixelsPerPt),
 				PixelsPerPt: pixelsPerPt,
-				Orientation: screenOrientation(widthPx, heightPx), // we are guessing orientation here as it was not always working
+				Orientation: orientation,
+				// Orientation: screenOrientation(widthPx, heightPx), // we are guessing orientation here as it was not always working
 			}
 			theApp.eventsIn <- paint.Event{External: true}
 		case <-windowDestroyed:
+                    fmt.Printf("detsonwindestroy\n")
 			if C.surface != nil {
 				if errStr := C.destroyEGLSurface(); errStr != nil {
 					return fmt.Errorf("%s (%s)", C.GoString(errStr), eglGetError())
@@ -363,7 +370,8 @@ func mainUI(vm, jniEnv, ctx uintptr) error {
 			C.surface = nil
 			theApp.sendLifecycle(lifecycle.StageAlive)
 		case <-activityDestroyed:
-			C.terminate()
+                    fmt.Printf("detsonactdestroy\n")
+			// C.terminate()
 			theApp.sendLifecycle(lifecycle.StageDead)
 		case <-workAvailable:
 			theApp.worker.DoWork()
